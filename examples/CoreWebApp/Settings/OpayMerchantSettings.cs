@@ -1,4 +1,4 @@
-namespace DemoWebApp.Settings
+namespace CoreWebApp.Settings
 {
     public class OpayCashierSettings
     {
