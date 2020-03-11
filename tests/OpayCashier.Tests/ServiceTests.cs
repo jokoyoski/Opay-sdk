@@ -29,8 +29,8 @@ namespace OpayCashier.Tests
         public async Task TestOrder()
         {
             var orderResponse = await _cashierService.Order(MockOrderRequest);
-          _outputHelper.WriteLine(JsonConvert.SerializeObject(MockOrderRequest));
-          _outputHelper.WriteLine(JsonConvert.SerializeObject(orderResponse));
+            _outputHelper.WriteLine(JsonConvert.SerializeObject(MockOrderRequest));
+            _outputHelper.WriteLine(JsonConvert.SerializeObject(orderResponse));
 
             Assert.Equal("00000", orderResponse.Code);
         }
