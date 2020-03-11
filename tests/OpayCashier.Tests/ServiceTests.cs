@@ -25,20 +25,20 @@ namespace OpayCashier.Tests
             );
         }
 
-        [Fact]
-        public async Task TestOrder()
-        {
-            var orderResponse = await _cashierService.Order(MockOrderRequest);
-            _outputHelper.WriteLine(JsonConvert.SerializeObject(MockOrderRequest));
-            _outputHelper.WriteLine(JsonConvert.SerializeObject(orderResponse));
-
-            Assert.Equal("00000", orderResponse.Code);
-        }
+        // [Fact]
+        // public async Task TestOrder()
+        // {
+        //     var orderResponse = await _cashierService.Order(MockOrderRequest);
+        //     _outputHelper.WriteLine(JsonConvert.SerializeObject(MockOrderRequest));
+        //     _outputHelper.WriteLine(JsonConvert.SerializeObject(orderResponse));
+        //
+        //     Assert.Equal("00000", orderResponse.Code);
+        // }
 
         [Fact]
         public void TestQuery()
         {
-            // _cashierService.Query()
+            _outputHelper.WriteLine("Hello");
         }
 
         public static readonly OrderRequest MockOrderRequest = new OrderRequest

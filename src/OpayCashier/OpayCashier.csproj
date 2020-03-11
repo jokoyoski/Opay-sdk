@@ -2,11 +2,9 @@
 
     <PropertyGroup>
         <PackageId>OPayCashier</PackageId>
-        <Version>0.0.1-alpha</Version>
         <Authors>OPay</Authors>
         <Company>OPay</Company>
         <IsPackable>true</IsPackable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>Opay cashier SDK</Description>
         <PackageProjectUrl>https://github.com/DevFojo/opay-cashier-sdk-dotnet</PackageProjectUrl>
         <RepositoryUrl>https://github.com/DevFojo/opay-cashier-sdk-dotnet</RepositoryUrl>
