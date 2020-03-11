@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>OPay.Cashier</PackageId>
+        <PackageId>OPayCashier</PackageId>
         <Version>0.0.1-alpha</Version>
         <Authors>OPay</Authors>
         <Company>OPay</Company>
@@ -11,12 +10,11 @@
         <Description>Opay cashier SDK</Description>
         <PackageProjectUrl>https://github.com/DevFojo/opay-cashier-sdk-dotnet</PackageProjectUrl>
         <RepositoryUrl>https://github.com/DevFojo/opay-cashier-sdk-dotnet</RepositoryUrl>
+        <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Flurl.Http" Version="2.4.2" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.0.0" />
     </ItemGroup>
 
 </Project>

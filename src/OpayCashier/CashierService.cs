@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Flurl;
-using Flurl.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -22,12 +21,13 @@ namespace OpayCashier
         private readonly string _merchantId;
         private readonly string _privateKey;
         private readonly string _iv;
-        private readonly string _baseUrl;
-        private readonly TimeSpan _timeout;
+        private readonly HttpClient _httpClient;
 
         private const string OrderPath = "api/cashier/order";
         private const string StatusPath = "api/cashier/merchantOrderStatus";
         private const string ClosePath = "api/cashier/merchantCloseOrder";
+
+        private const string JsonMediaType = "application/json";
 
         static CashierService()
         {
@@ -75,16 +75,15 @@ namespace OpayCashier
                 throw new ArgumentNullException(nameof(iv));
             }
 
-            if (!Url.IsValid(baseUrl))
-            {
-                throw new ArgumentException("invalid base url", nameof(baseUrl));
-            }
-
-            _baseUrl = baseUrl;
-            _timeout = timeout ?? TimeSpan.FromSeconds(5);
             _merchantId = merchantId;
             _privateKey = privateKey;
             _iv = iv;
+
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri(baseUrl),
+                Timeout = timeout ?? TimeSpan.FromSeconds(5)
+            };
         }
 
         /// <summary>
@@ -96,13 +95,20 @@ namespace OpayCashier
         /// <returns></returns>
         public async Task<BaseResponse<OrderResponse>> Order(OrderRequest request)
         {
-            var jsonString = JsonConvert.SerializeObject(request);
+            var dataString = JsonConvert.SerializeObject(request);
+            var jsonString = JsonConvert.SerializeObject(new ApiRequest(_merchantId, Encrypt(dataString)));
 
-            return await _baseUrl
-                .AppendPathSegment(OrderPath)
-                .WithTimeout(_timeout)
-                .PostJsonAsync(new ApiRequest(_merchantId, Encrypt(jsonString)))
-                .ReceiveJson<BaseResponse<OrderResponse>>();
+            var content = new StringContent(jsonString, Encoding.UTF8, JsonMediaType);
+            var response = await _httpClient.PostAsync(OrderPath, content);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new OpayCashierHttpException(response.StatusCode, responseString);
+            }
+
+            return JsonConvert.DeserializeObject<BaseResponse<OrderResponse>>(responseString);
         }
 
         /// <summary>
@@ -114,13 +120,19 @@ namespace OpayCashier
         /// <returns></returns>
         public async Task<BaseResponse<QueryResponse>> Query(QueryRequest request)
         {
-            var jsonString = JsonConvert.SerializeObject(request);
+            var dataString = JsonConvert.SerializeObject(request);
+            var jsonString = JsonConvert.SerializeObject(new ApiRequest(_merchantId, Encrypt(dataString)));
 
-            return await _baseUrl
-                .AppendPathSegment(StatusPath)
-                .WithTimeout(_timeout)
-                .PostJsonAsync(new ApiRequest(_merchantId, Encrypt(jsonString)))
-                .ReceiveJson<BaseResponse<QueryResponse>>();
+            var content = new StringContent(jsonString, Encoding.UTF8, JsonMediaType);
+            var response = await _httpClient.PostAsync(StatusPath, content);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new OpayCashierHttpException(response.StatusCode, responseString);
+            }
+
+            return JsonConvert.DeserializeObject<BaseResponse<QueryResponse>>(responseString);
         }
 
         /// <summary>
@@ -132,13 +144,18 @@ namespace OpayCashier
         /// <returns></returns>
         public async Task<BaseResponse<CloseResponse>> Close(CloseRequest request)
         {
-            var jsonString = JsonConvert.SerializeObject(request);
+            var dataString = JsonConvert.SerializeObject(request);
+            var jsonString = JsonConvert.SerializeObject(new ApiRequest(_merchantId, Encrypt(dataString)));
+            var content = new StringContent(jsonString, Encoding.UTF8, JsonMediaType);
+            var response = await _httpClient.PostAsync(ClosePath, content);
 
-            return await _baseUrl
-                .AppendPathSegment(ClosePath)
-                .WithTimeout(_timeout)
-                .PostJsonAsync(new ApiRequest(_merchantId, Encrypt(jsonString)))
-                .ReceiveJson<BaseResponse<CloseResponse>>();
+            var responseString = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new OpayCashierHttpException(response.StatusCode, responseString);
+            }
+
+            return JsonConvert.DeserializeObject<BaseResponse<CloseResponse>>(responseString);
         }
 
         private string Encrypt(string data)

@@ -1,4 +1,4 @@
-namespace OpayCashier
+namespace OpayCashier.Models
 {
     public class CloseResponse
     {
