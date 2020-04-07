@@ -1,9 +1,8 @@
 namespace OpayCashier.Models
 {
-    public enum PaymentMethod
+    public enum PayMethod
     {
         Account,
-        QrCode,
-        Card
+        QrCode
     }
 }

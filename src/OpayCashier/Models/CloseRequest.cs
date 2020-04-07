@@ -1,6 +1,6 @@
 namespace OpayCashier.Models
 {
-    public class CloseRequest
+    public class CloseRequest : BaseRequest
     {
     }
 }

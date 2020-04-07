@@ -1,6 +1,6 @@
 namespace OpayCashier.Models
 {
-    public class QueryResponse
+    public class CloseData:BaseData
     {
     }
 }

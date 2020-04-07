@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using System.Web.Http;
 using OpayCashier;
 using OpayCashier.Models;
 
-namespace CoreWebApp.Controllers
+namespace FxWebApp.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class TestController : ControllerBase
+    public class TestController : ApiController
     {
         private readonly ICashierService _cashierService;
 
-        public TestController(ICashierService cashierService)
+        public TestController()
         {
-            _cashierService = cashierService;
+            var baseUrl = ConfigurationManager.AppSettings[""];
+            var merchantId = ConfigurationManager.AppSettings[""];
+            var publicKey = ConfigurationManager.AppSettings[""];
+            _cashierService = new CashierService(baseUrl, merchantId, publicKey, "", TimeSpan.FromSeconds(5));
         }
 
-        [HttpGet("order")]
         public async Task<BaseResponse<OrderData>> Order()
         {
             var orderRequest = new OrderRequest
@@ -49,7 +50,6 @@ namespace CoreWebApp.Controllers
             return await _cashierService.Order(orderRequest);
         }
 
-        [HttpGet("query")]
         public async Task<BaseResponse<QueryData>> Query()
         {
             var queryRequest = new QueryRequest
@@ -61,7 +61,6 @@ namespace CoreWebApp.Controllers
             return await _cashierService.Query(queryRequest);
         }
 
-        [HttpGet("close")]
         public async Task<BaseResponse<CloseData>> Close()
         {
             var closeRequest = new CloseRequest

@@ -1,6 +1,6 @@
 namespace OpayCashier.Models
 {
-    public class QueryRequest
+    public class QueryRequest : BaseRequest
     {
     }
 }
