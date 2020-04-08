@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace OpayCashier.Models
+namespace OpayCashier.Models.Exceptions
 {
     public class OpayCashierHttpException : Exception
     {

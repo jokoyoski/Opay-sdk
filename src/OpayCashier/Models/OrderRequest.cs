@@ -8,28 +8,76 @@ namespace OpayCashier.Models
     /// </summary>
     public class OrderRequest : IValidatableRequest
     {
-        public List<PaymentMethod> PaymentMethods { get; set; }
+        private const string DefaultCurrency = "NGN";
+
+        /// <summary>
+        /// Order number of merchant (unique order number from merchant platform)
+        /// </summary>
         public string Reference { get; set; }
-        public string ProductDesc { get; set; }
-        public List<PayChannel> PayChannels { get; set; }
-        public PayAmount PayAmount { get; set; }
-        public string UserMobile { get; set; }
-        public string UserRequestIp { get; set; }
-        public string CallbackUrl { get; set; }
-        public string ReturnUrl { get; set; }
+
+        /// <summary>
+        /// The short name of a Merchant. It's displayed on the payment confirmation page.
+        /// </summary>
         public string MchShortName { get; set; }
+
+        /// <summary>
+        /// Product name, utf-8 encoded
+        /// </summary>
         public string ProductName { get; set; }
 
-        public bool Validate()
+        /// <summary>
+        /// Product description, utf-8 encoded
+        /// </summary>
+        public string ProductDesc { get; set; }
+
+        /// <summary>
+        /// User phone number sent by merchant
+        /// </summary>
+        public string UserPhone { get; set; }
+
+        /// <summary>
+        /// The IP address requested by user, need pass-through by merchant, user Anti-phishing verification.
+        /// </summary>
+        public string UserRequestIp { get; set; }
+
+        /// <summary>
+        /// Amount in kobo
+        /// </summary>
+        public string Amount { get; set; }
+
+        /// <summary>
+        /// Currency charge should be performed in. Default is NGN
+        /// </summary>
+        public string Currency { get; set; }
+
+        public List<PayType> PayTypes { get; set; }
+        public List<PayMethod> PayMethods { get; set; }
+
+        /// <summary>
+        /// The asynchronous callback address after transaction successful.
+        /// </summary>
+        public string CallbackUrl { get; set; }
+
+        /// <summary>
+        /// The address that browser go to after transaction successful.
+        /// </summary>
+        public string ReturnUrl { get; set; }
+
+        /// <summary>
+        /// Transaction would be closed within specific time. Value is in minute.
+        /// </summary>
+        public string ExpireAt { get; set; }
+
+        public void Validate()
         {
-            if (PaymentMethods != null && PaymentMethods.Count > 0)
+            if (PayMethods == null || PayMethods.Count <= 0)
             {
-                throw new ArgumentNullException(nameof(PaymentMethods));
+                throw new ArgumentNullException(nameof(PayMethods));
             }
 
-            if (PayChannels != null && PayChannels.Count > 0)
+            if (PayTypes == null || PayTypes.Count <= 0)
             {
-                throw new ArgumentNullException(nameof(PayChannels));
+                throw new ArgumentNullException(nameof(PayTypes));
             }
 
             if (string.IsNullOrWhiteSpace(Reference))
@@ -42,9 +90,9 @@ namespace OpayCashier.Models
                 throw new ArgumentNullException(nameof(ProductDesc));
             }
 
-            if (string.IsNullOrWhiteSpace(UserMobile))
+            if (string.IsNullOrWhiteSpace(UserPhone))
             {
-                throw new ArgumentNullException(nameof(UserMobile));
+                throw new ArgumentNullException(nameof(UserPhone));
             }
 
             if (string.IsNullOrWhiteSpace(UserRequestIp))
@@ -72,12 +120,30 @@ namespace OpayCashier.Models
                 throw new ArgumentNullException(nameof(MchShortName));
             }
 
-            if (PayAmount == null)
+            if (string.IsNullOrWhiteSpace(Currency))
             {
-                throw new ArgumentNullException(nameof(PayAmount));
+                Currency = DefaultCurrency;
             }
 
-            return true;
+            if (string.IsNullOrWhiteSpace(Amount))
+            {
+                throw new ArgumentNullException(nameof(Amount));
+            }
+
+            if (!int.TryParse(Amount, out _))
+            {
+                throw new ArgumentException(nameof(Amount));
+            }
+
+            if (string.IsNullOrWhiteSpace(ExpireAt))
+            {
+                throw new ArgumentNullException(nameof(ExpireAt));
+            }
+
+            if (!int.TryParse(ExpireAt, out _))
+            {
+                throw new ArgumentException(nameof(ExpireAt));
+            }
         }
     }
 }

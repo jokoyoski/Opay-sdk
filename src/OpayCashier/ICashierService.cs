@@ -5,9 +5,9 @@ namespace OpayCashier
 {
     public interface ICashierService
     {
-        Task<BaseResponse<OrderResponse>> Order(OrderRequest request);
+        Task<BaseResponse<OrderData>> Order(OrderRequest request);
 
-        Task<BaseResponse<QueryResponse>> Query(QueryRequest request);
-        Task<BaseResponse<CloseResponse>> Close(CloseRequest request);
+        Task<BaseResponse<QueryData>> Query(QueryRequest request);
+        Task<BaseResponse<CloseData>> Close(CloseRequest request);
     }
 }

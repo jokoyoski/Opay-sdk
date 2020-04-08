@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using OpayCashier.Models;
+using OpayCashier.Models.Exceptions;
 
 namespace OpayCashier
 {
@@ -18,14 +19,13 @@ namespace OpayCashier
     /// </summary>
     public class CashierService : ICashierService
     {
-        private readonly string _merchantId;
         private readonly string _privateKey;
-        private readonly string _iv;
         private readonly HttpClient _httpClient;
+        private readonly string _publicKey;
 
-        private const string OrderPath = "api/cashier/order";
-        private const string StatusPath = "api/cashier/merchantOrderStatus";
-        private const string ClosePath = "api/cashier/merchantCloseOrder";
+        private const string OrderPath = "api/v3/cashier/initialize";
+        private const string StatusPath = "api/v3/cashier/status";
+        private const string ClosePath = "api/v3/cashier/close";
 
         private const string JsonMediaType = "application/json";
 
@@ -49,11 +49,11 @@ namespace OpayCashier
         /// Creates a new OPay cashier service.
         /// </summary>
         /// <param name="baseUrl">The base URL for Opay cashier services</param>
-        /// <param name="merchantId">Current merchant ID</param>
-        /// <param name="privateKey">Encryption private key</param>
-        /// <param name="iv">Encryption initialization vector</param>
+        /// <param name="merchantId">Merchant ID</param>
+        /// <param name="publicKey">Merchant public key</param>
         /// <param name="timeout">HTTP request timeout</param>
-        public CashierService(string baseUrl, string merchantId, string privateKey, string iv, TimeSpan? timeout = null)
+        public CashierService(string baseUrl, string merchantId, string publicKey, string privateKey,
+            TimeSpan? timeout = null)
         {
             if (string.IsNullOrWhiteSpace(baseUrl))
             {
@@ -65,25 +65,24 @@ namespace OpayCashier
                 throw new ArgumentNullException(nameof(merchantId));
             }
 
+            if (string.IsNullOrWhiteSpace(publicKey))
+            {
+                throw new ArgumentNullException(nameof(publicKey));
+            }
+
             if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
 
-            if (string.IsNullOrWhiteSpace(iv))
-            {
-                throw new ArgumentNullException(nameof(iv));
-            }
-
-            _merchantId = merchantId;
             _privateKey = privateKey;
-            _iv = iv;
-
+            _publicKey = publicKey;
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri(baseUrl),
                 Timeout = timeout ?? TimeSpan.FromSeconds(5)
             };
+            _httpClient.DefaultRequestHeaders.Add("MerchantId", merchantId);
         }
 
         /// <summary>
@@ -93,22 +92,27 @@ namespace OpayCashier
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<OrderResponse>> Order(OrderRequest request)
+        public async Task<BaseResponse<OrderData>> Order(OrderRequest request)
         {
-            var dataString = JsonConvert.SerializeObject(request);
-            var jsonString = JsonConvert.SerializeObject(new ApiRequest(_merchantId, Encrypt(dataString)));
+            request.Validate();
+            var jsonRequest = JsonConvert.SerializeObject(request);
 
-            var content = new StringContent(jsonString, Encoding.UTF8, JsonMediaType);
-            var response = await _httpClient.PostAsync(OrderPath, content);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _publicKey);
 
-            var responseString = await response.Content.ReadAsStringAsync();
+            var response = await _httpClient.SendAsync(new HttpRequestMessage
+            {
+                RequestUri = new Uri(OrderPath, UriKind.Relative),
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonRequest, Encoding.UTF8, JsonMediaType)
+            });
+            var jsonResponse = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new OpayCashierHttpException(response.StatusCode, responseString);
+                throw new OpayCashierHttpException(response.StatusCode, jsonResponse);
             }
 
-            return JsonConvert.DeserializeObject<BaseResponse<OrderResponse>>(responseString);
+            return JsonConvert.DeserializeObject<BaseResponse<OrderData>>(jsonResponse);
         }
 
         /// <summary>
@@ -118,21 +122,29 @@ namespace OpayCashier
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<QueryResponse>> Query(QueryRequest request)
+        public async Task<BaseResponse<QueryData>> Query(QueryRequest request)
         {
-            var dataString = JsonConvert.SerializeObject(request);
-            var jsonString = JsonConvert.SerializeObject(new ApiRequest(_merchantId, Encrypt(dataString)));
+            request.Validate();
+            var jsonRequest = JsonConvert.SerializeObject(request);
 
-            var content = new StringContent(jsonString, Encoding.UTF8, JsonMediaType);
-            var response = await _httpClient.PostAsync(StatusPath, content);
-            var responseString = await response.Content.ReadAsStringAsync();
+            var signature = SignData(jsonRequest);
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", signature);
+
+            var response = await _httpClient.SendAsync(new HttpRequestMessage
+            {
+                RequestUri = new Uri(StatusPath, UriKind.Relative),
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonRequest, Encoding.UTF8, JsonMediaType)
+            });
+            var jsonResponse = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new OpayCashierHttpException(response.StatusCode, responseString);
+                throw new OpayCashierHttpException(response.StatusCode, jsonResponse);
             }
 
-            return JsonConvert.DeserializeObject<BaseResponse<QueryResponse>>(responseString);
+            return JsonConvert.DeserializeObject<BaseResponse<QueryData>>(jsonResponse);
         }
 
         /// <summary>
@@ -142,45 +154,40 @@ namespace OpayCashier
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<CloseResponse>> Close(CloseRequest request)
+        public async Task<BaseResponse<CloseData>> Close(CloseRequest request)
         {
-            var dataString = JsonConvert.SerializeObject(request);
-            var jsonString = JsonConvert.SerializeObject(new ApiRequest(_merchantId, Encrypt(dataString)));
-            var content = new StringContent(jsonString, Encoding.UTF8, JsonMediaType);
-            var response = await _httpClient.PostAsync(ClosePath, content);
+            request.Validate();
+            var jsonRequest = JsonConvert.SerializeObject(request);
 
-            var responseString = await response.Content.ReadAsStringAsync();
+            var signature = SignData(jsonRequest);
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", signature);
+            var response = await _httpClient.SendAsync(new HttpRequestMessage
+            {
+                RequestUri = new Uri(ClosePath, UriKind.Relative),
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonRequest, Encoding.UTF8, JsonMediaType)
+            });
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
             if (!response.IsSuccessStatusCode)
             {
-                throw new OpayCashierHttpException(response.StatusCode, responseString);
+                throw new OpayCashierHttpException(response.StatusCode, jsonResponse);
             }
 
-            return JsonConvert.DeserializeObject<BaseResponse<CloseResponse>>(responseString);
+            return JsonConvert.DeserializeObject<BaseResponse<CloseData>>(jsonResponse);
         }
 
-        private string Encrypt(string data)
+        private string SignData(string data)
         {
-            byte[] cipherBytes;
-            using (var aes = new RijndaelManaged())
+            var keyBytes = Encoding.UTF8.GetBytes(_privateKey);
+            using (var shaAlgorithm = new HMACSHA512(keyBytes))
             {
-                var plainBytes = Encoding.UTF8.GetBytes(data);
-                aes.Key = Encoding.UTF8.GetBytes(_privateKey);
-                aes.IV = Encoding.UTF8.GetBytes(_iv);
-                using (var encrypt = aes.CreateEncryptor())
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        using (var cryptoStream = new CryptoStream(ms, encrypt, CryptoStreamMode.Write))
-                        {
-                            cryptoStream.Write(plainBytes, 0, plainBytes.Length);
-                            cryptoStream.FlushFinalBlock();
-                            cipherBytes = ms.ToArray();
-                        }
-                    }
-                }
+                var signatureBytes = Encoding.UTF8.GetBytes(data);
+                var signatureHashBytes = shaAlgorithm.ComputeHash(signatureBytes);
+                return string.Concat(Array.ConvertAll(signatureHashBytes, b => b.ToString("X2")))
+                    .ToLower();
             }
-
-            return Convert.ToBase64String(cipherBytes);
         }
     }
 }

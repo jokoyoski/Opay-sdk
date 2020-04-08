@@ -6,7 +6,10 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.App" />
-        <ProjectReference Include="..\..\src\OpayCashier\OpayCashier.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\OpayCashier\OpayCashier.csproj" />
     </ItemGroup>
 
 

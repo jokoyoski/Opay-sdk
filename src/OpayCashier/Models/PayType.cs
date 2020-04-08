@@ -1,18 +1,20 @@
+using System.Runtime.Serialization;
+
 namespace OpayCashier.Models
 {
     /// <summary>
     /// 
     /// </summary>
-    public enum PayChannel
+    public enum PayType
     {
         /// <summary>
         /// 
         /// </summary>
-        BalancePayment,
+        [EnumMember(Value = "BalancePayment")] BalancePayment,
 
         /// <summary>
         /// 
         /// </summary>
-        BonusPayment
+        [EnumMember(Value = "BonusPayment")] BonusPayment
     }
 }
