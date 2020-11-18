@@ -1,5 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpayCashier", "src\OpayCashier\OpayCashier.csproj", "{6CD7519D-1305-453D-9390-7B6A2169D2F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreWebApp", "examples\CoreWebApp\CoreWebApp.csproj", "{6E54D3F0-ED74-4D7E-9252-FC8B448A4C0E}"
@@ -7,6 +8,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpayCashier.Tests", "tests\OpayCashier.Tests\OpayCashier.Tests.csproj", "{05CD0F6D-BC92-49BB-A09B-AF5A63942BD3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FxWebApp", "examples\FxWebApp\FxWebApp.csproj", "{6B26C990-EDC1-48C9-899D-F81094ED272D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manager", "Manager\Manager.csproj", "{667911BE-9BEB-4CAF-B35F-CB2074144075}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +33,9 @@ Global
 		{6B26C990-EDC1-48C9-899D-F81094ED272D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B26C990-EDC1-48C9-899D-F81094ED272D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B26C990-EDC1-48C9-899D-F81094ED272D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{667911BE-9BEB-4CAF-B35F-CB2074144075}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{667911BE-9BEB-4CAF-B35F-CB2074144075}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{667911BE-9BEB-4CAF-B35F-CB2074144075}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{667911BE-9BEB-4CAF-B35F-CB2074144075}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

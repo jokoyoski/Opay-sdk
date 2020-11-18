@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace OpayCashier.Models
+namespace Manager
 {
     /// <summary>
     /// 

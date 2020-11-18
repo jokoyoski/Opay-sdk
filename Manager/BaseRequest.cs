@@ -1,6 +1,6 @@
 using System;
 
-namespace OpayCashier.Models
+namespace Manager
 {
     public abstract class BaseRequest : IValidatableRequest
     {

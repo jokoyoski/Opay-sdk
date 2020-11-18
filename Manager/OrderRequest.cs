@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Manager;
+
 
 namespace OpayCashier.Models
 {

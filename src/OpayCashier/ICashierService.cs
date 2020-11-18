@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using Manager;
+using Manager;
 using OpayCashier.Models;
 
 namespace OpayCashier

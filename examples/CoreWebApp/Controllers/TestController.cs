@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Manager;
 using Microsoft.AspNetCore.Mvc;
 using OpayCashier;
 using OpayCashier.Models;
@@ -12,10 +13,12 @@ namespace CoreWebApp.Controllers
     public class TestController : ControllerBase
     {
         private readonly ICashierService _cashierService;
+        private readonly ITransferService _transferService;
 
-        public TestController(ICashierService cashierService)
+        public TestController(ICashierService cashierService,ITransferService transferService)
         {
             _cashierService = cashierService;
+            _transferService = transferService;
         }
 
         [HttpGet("order")]
@@ -47,6 +50,33 @@ namespace CoreWebApp.Controllers
             };
 
             return await _cashierService.Order(orderRequest);
+        }
+
+
+        [HttpPost("transfer")]
+        public async Task<BaseResponse<TransferResponse>> Transfer()
+        {
+            var orderRequest = new TransferRequest
+            {
+                Amount = 100,
+                Country = "NG",
+                Currency = "NGN",
+                Reason = "transfer reason message",
+                Reciever = new Reciever
+                {
+                    MerchantId = "256620072116000",
+                    Name = "Omojo Negedu",
+                    PhoneNumber= "+2348036952110",
+                    Type = "MERCHANT",
+                   
+                },
+                Reference = $"test_{DateTime.Now.Ticks}",
+              
+              
+              
+            };
+
+            return await _transferService.Transfer(orderRequest);
         }
 
         [HttpGet("query")]
