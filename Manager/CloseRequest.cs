@@ -1,4 +1,4 @@
-namespace OpayCashier.Models
+namespace Manager
 {
     public class CloseRequest : BaseRequest
     {

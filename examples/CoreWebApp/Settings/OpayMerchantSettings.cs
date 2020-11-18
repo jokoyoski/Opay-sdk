@@ -1,6 +1,6 @@
 namespace CoreWebApp.Settings
 {
-    public class OpayCashierSettings
+    public class OpayMerchantSettings
     {
         public string BaseUrl { get; set; }
         public string MerchantId { get; set; }

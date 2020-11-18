@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Manager;
 using OpayCashier;
 using OpayCashier.Models;
 

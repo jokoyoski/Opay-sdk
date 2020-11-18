@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using OpayCashier.Models;
+using Manager;
 using OpayCashier.Models.Exceptions;
 
 namespace OpayCashier
@@ -28,6 +29,12 @@ namespace OpayCashier
         private const string ClosePath = "api/v3/cashier/close";
 
         private const string JsonMediaType = "application/json";
+
+
+        public CashierService()
+        {
+
+        }
 
         static CashierService()
         {
@@ -127,7 +134,7 @@ namespace OpayCashier
             request.Validate();
             var jsonRequest = JsonConvert.SerializeObject(request);
 
-            var signature = SignData(jsonRequest);
+            var signature = Helper.EncryptData(jsonRequest, _privateKey);
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", signature);
 
@@ -159,7 +166,7 @@ namespace OpayCashier
             request.Validate();
             var jsonRequest = JsonConvert.SerializeObject(request);
 
-            var signature = SignData(jsonRequest);
+            var signature = Helper.EncryptData(jsonRequest,_privateKey);
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", signature);
             var response = await _httpClient.SendAsync(new HttpRequestMessage
@@ -178,16 +185,6 @@ namespace OpayCashier
             return JsonConvert.DeserializeObject<BaseResponse<CloseData>>(jsonResponse);
         }
 
-        private string SignData(string data)
-        {
-            var keyBytes = Encoding.UTF8.GetBytes(_privateKey);
-            using (var shaAlgorithm = new HMACSHA512(keyBytes))
-            {
-                var signatureBytes = Encoding.UTF8.GetBytes(data);
-                var signatureHashBytes = shaAlgorithm.ComputeHash(signatureBytes);
-                return string.Concat(Array.ConvertAll(signatureHashBytes, b => b.ToString("X2")))
-                    .ToLower();
-            }
-        }
+        
     }
 }

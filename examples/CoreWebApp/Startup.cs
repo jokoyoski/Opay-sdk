@@ -23,10 +23,10 @@ namespace CoreWebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.Configure<OpayCashierSettings>(Configuration.GetSection("OpayCashier"));
+            services.Configure<OpayMerchantSettings>(Configuration.GetSection("OpayMerchantSettings"));
             services.AddTransient<ICashierService>(s =>
             {
-                var opayCashierSettings = s.GetService<IOptions<OpayCashierSettings>>().Value;
+                var opayCashierSettings = s.GetService<IOptions<OpayMerchantSettings>>().Value;
                 return new CashierService(opayCashierSettings.BaseUrl,
                     opayCashierSettings.MerchantId,
                     opayCashierSettings.PrivateKey,
@@ -35,6 +35,20 @@ namespace CoreWebApp
                         ? default(TimeSpan?)
                         : TimeSpan.FromSeconds(opayCashierSettings.Timeout.Value));
             });
+
+            services.AddTransient<ITransferService>(s =>
+            {
+                var opayCashierSettings = s.GetService<IOptions<OpayMerchantSettings>>().Value;
+                return new TransferService(opayCashierSettings.BaseUrl,
+                    opayCashierSettings.MerchantId,
+                    opayCashierSettings.PrivateKey,
+                    opayCashierSettings.Iv,
+                    opayCashierSettings.Timeout == null
+                        ? default(TimeSpan?)
+                        : TimeSpan.FromSeconds(opayCashierSettings.Timeout.Value));
+            });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

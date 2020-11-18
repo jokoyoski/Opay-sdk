@@ -157,6 +157,10 @@
       <Project>{6cd7519d-1305-453d-9390-7b6a2169d2f0}</Project>
       <Name>OpayCashier</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Manager\Manager.csproj">
+      <Project>{667911BE-9BEB-4CAF-B35F-CB2074144075}</Project>
+      <Name>Manager</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -183,6 +187,11 @@
         </WebProjectProperties>
       </FlavorProperties>
     </VisualStudio>
+    <MonoDevelop>
+      <Properties>
+        <XspParameters Port="8080" Address="127.0.0.1" SslMode="None" SslProtocol="Default" KeyType="None" CertFile="" KeyFile="" PasswordOptions="None" Password="" Verbose="True" />
+      </Properties>
+    </MonoDevelop>
   </ProjectExtensions>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
